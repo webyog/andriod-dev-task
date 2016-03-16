@@ -1,27 +1,46 @@
-package com.rgade.androidtask.app;
+package com.rgade.androidtask.app.activities;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import com.rgade.androidtask.app.R;
+import com.rgade.androidtask.app.adapters.MessageAdapter;
 import com.rgade.androidtask.app.core.DataManager;
 import com.rgade.androidtask.app.models.Message;
 
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+    private DataManager mDataManager;
+    private RecyclerView mRecyclerView;
+    private MessageAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        DataManager.getInstance(getApplicationContext()).fetchMessages(new DataManager.Callback<List<Message>>() {
+        mDataManager = DataManager.getInstance(getApplicationContext());
+        mRecyclerView = (RecyclerView) findViewById(R.id.recycler);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        mRecyclerView.setLayoutManager(layoutManager);
+        mAdapter = new MessageAdapter(getBaseContext());
+        mRecyclerView.setAdapter(mAdapter);
+        mDataManager.fetchMessages(new DataManager.Callback<List<Message>>() {
             @Override
             public void onCall(List<Message> response) {
-                Log.d(getClass().getSimpleName(),"Successful fetch");
+                mAdapter.updateData(response);
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mAdapter.updateData(DataManager.getInstance(null).getMessages());
     }
 
     @Override
