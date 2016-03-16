@@ -2,8 +2,13 @@ package com.rgade.androidtask.app;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import com.rgade.androidtask.app.core.DataManager;
+import com.rgade.androidtask.app.models.Message;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -11,6 +16,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        DataManager.getInstance(getApplicationContext()).fetchMessages(new DataManager.Callback<List<Message>>() {
+            @Override
+            public void onCall(List<Message> response) {
+                Log.d(getClass().getSimpleName(),"Successful fetch");
+            }
+        });
     }
 
     @Override
