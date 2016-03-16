@@ -1,5 +1,6 @@
 package com.rgade.androidtask.app.activities;
 
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -8,6 +9,7 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 import com.rgade.androidtask.app.R;
 import com.rgade.androidtask.app.adapters.MessageAdapter;
 import com.rgade.androidtask.app.core.DataManager;
@@ -15,10 +17,11 @@ import com.rgade.androidtask.app.models.Message;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
     private DataManager mDataManager;
     private RecyclerView mRecyclerView;
     private MessageAdapter mAdapter;
+    private SwipeRefreshLayout mRefresher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         mDataManager = DataManager.getInstance(getApplicationContext());
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler);
+        mRefresher = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
+        mRefresher.setOnRefreshListener(this);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(layoutManager);
         mAdapter = new MessageAdapter(getBaseContext());
@@ -33,10 +38,20 @@ public class MainActivity extends AppCompatActivity {
         ItemTouchHelper.SimpleCallback callback = new MessageSwipeCallback(mAdapter);
         ItemTouchHelper helper = new ItemTouchHelper(callback);
         helper.attachToRecyclerView(mRecyclerView);
+        pullData();
+    }
+
+    private void pullData() {
+        mRefresher.setRefreshing(true);
         mDataManager.fetchMessages(new DataManager.Callback<List<Message>>() {
             @Override
             public void onCall(List<Message> response) {
-                mAdapter.updateData(response);
+                mRefresher.setRefreshing(false);
+                if (response == null) {
+                    Toast.makeText(getBaseContext(), "Unable to fetch messages", Toast.LENGTH_SHORT).show();
+                } else {
+                    mAdapter.updateData(response);
+                }
             }
         });
     }
@@ -62,11 +77,13 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onRefresh() {
+        pullData();
     }
 
     private class MessageSwipeCallback extends ItemTouchHelper.SimpleCallback {

@@ -96,8 +96,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             subject.setText(mMessage.getSubject());
             shortlist(mMessage.isStarred(), star);
             setRead(mMessage.isRead(), view);
-            time.setText("7h");
-            participants.setText(mMessage.getParticipants()[0]);
+            time.setText(mMessage.getDateString());
+            participants.setText(mMessage.getParticipantsString());
             preview.setText(mMessage.getPreview());
         }
 

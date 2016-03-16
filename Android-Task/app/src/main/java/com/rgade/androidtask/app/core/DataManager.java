@@ -55,6 +55,8 @@ public class DataManager {
                     Gson gson = new Gson();
                     Log.d(getClass().getSimpleName()+" - fetchMessages",response.toString());
                     ArrayList<Message> temp = gson.fromJson(response.toString(), collectionType);
+                    for (Message m : temp)
+                        m.process();
                     messages.clear();
                     messages.addAll(temp);
                     success = true;
