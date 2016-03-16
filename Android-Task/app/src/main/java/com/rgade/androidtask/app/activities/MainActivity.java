@@ -4,6 +4,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -29,6 +30,9 @@ public class MainActivity extends AppCompatActivity {
         mRecyclerView.setLayoutManager(layoutManager);
         mAdapter = new MessageAdapter(getBaseContext());
         mRecyclerView.setAdapter(mAdapter);
+        ItemTouchHelper.SimpleCallback callback = new MessageSwipeCallback(mAdapter);
+        ItemTouchHelper helper = new ItemTouchHelper(callback);
+        helper.attachToRecyclerView(mRecyclerView);
         mDataManager.fetchMessages(new DataManager.Callback<List<Message>>() {
             @Override
             public void onCall(List<Message> response) {
@@ -63,5 +67,25 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private class MessageSwipeCallback extends ItemTouchHelper.SimpleCallback {
+        private MessageAdapter mAdapter;
+
+        public MessageSwipeCallback(MessageAdapter adapter) {
+            super(ItemTouchHelper.ACTION_STATE_IDLE, ItemTouchHelper.LEFT);
+            mAdapter = adapter;
+        }
+
+        @Override
+        public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+            return false;
+        }
+
+        @Override
+        public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+            mAdapter.delete(viewHolder.getAdapterPosition());
+        }
+
     }
 }

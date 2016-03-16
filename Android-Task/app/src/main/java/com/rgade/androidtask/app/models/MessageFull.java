@@ -10,6 +10,10 @@ public class MessageFull {
     private boolean isStarred;
     private long ts;
 
+    public void setStarred(boolean starred) {
+        isStarred = starred;
+    }
+
     public String getId() {
         return id;
     }

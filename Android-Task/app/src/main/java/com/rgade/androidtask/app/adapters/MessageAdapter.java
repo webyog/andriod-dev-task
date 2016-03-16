@@ -141,6 +141,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 setRead(true, v);
                 Intent i = new Intent(v.getContext(), Details.class);
                 i.putExtra(Details.KEY_INDEX, getAdapterPosition());
+                i.putExtra(Details.KEY_ID,mList.get(getAdapterPosition()).getId());
                 i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 v.getContext().startActivity(i);
             }
