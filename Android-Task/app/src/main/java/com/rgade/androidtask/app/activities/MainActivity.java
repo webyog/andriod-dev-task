@@ -1,5 +1,6 @@
 package com.rgade.androidtask.app.activities;
 
+import android.os.CountDownTimer;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -9,6 +10,7 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 import com.rgade.androidtask.app.R;
 import com.rgade.androidtask.app.adapters.MessageAdapter;
@@ -22,6 +24,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     private RecyclerView mRecyclerView;
     private MessageAdapter mAdapter;
     private SwipeRefreshLayout mRefresher;
+    private View mUndoView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +39,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         mRecyclerView.setLayoutManager(layoutManager);
         mAdapter = new MessageAdapter(getBaseContext());
         mRecyclerView.setAdapter(mAdapter);
-        ItemTouchHelper.SimpleCallback callback = new MessageSwipeCallback(mAdapter);
+        mUndoView = findViewById(R.id.undo_layout);
+        ItemTouchHelper.SimpleCallback callback = new MessageSwipeCallback(mAdapter, mUndoView);
         ItemTouchHelper helper = new ItemTouchHelper(callback);
         helper.attachToRecyclerView(mRecyclerView);
         pullData();
@@ -88,10 +93,56 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
     private class MessageSwipeCallback extends ItemTouchHelper.SimpleCallback {
         private MessageAdapter mAdapter;
+        private Message mLastMessage;
+        private int mLastPos;
+        private CountDownTimer mTimer;
+        private View mView;
 
-        public MessageSwipeCallback(MessageAdapter adapter) {
+        public MessageSwipeCallback(MessageAdapter adapter, View displayView) {
             super(ItemTouchHelper.ACTION_STATE_IDLE, ItemTouchHelper.LEFT);
             mAdapter = adapter;
+            mView = displayView;
+            mView.findViewById(R.id.undo_action).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mLastMessage != null && mLastPos != -1) {
+                        mAdapter.add(mLastMessage, mLastPos);
+                        mView.setVisibility(View.GONE);
+                        mTimer.cancel();
+                        mLastMessage = null;
+                        mLastPos = -1;
+                    } else {
+                        Log.w(getClass().getSimpleName(), "Undo screen invoked with null lastMessage");
+                        mView.setVisibility(View.GONE);
+                    }
+                }
+            });
+            mTimer = new CountDownTimer(3000, 1000) {
+
+                @Override
+                public void onTick(long millisUntilFinished) {
+
+                }
+
+                @Override
+                public void onFinish() {
+                    if (mLastMessage != null && mLastPos != -1) {
+                        DataManager.getInstance(null).deleteMessage(new DataManager.Callback<Boolean>() {
+                            @Override
+                            public void onCall(Boolean response) {
+                                Log.d(getClass().getSimpleName(), "Delete " + response);
+                            }
+                        }, mLastMessage.getId());
+                        mView.setVisibility(View.GONE);
+                        mLastMessage = null;
+                        mLastPos = -1;
+                    } else {
+                        Log.w(getClass().getSimpleName(), "Undo screen invoked with null lastMessage");
+                        mView.setVisibility(View.GONE);
+                    }
+
+                }
+            };
         }
 
         @Override
@@ -101,7 +152,20 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
         @Override
         public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-            mAdapter.delete(viewHolder.getAdapterPosition());
+            if (mLastMessage != null && mLastPos != -1) {
+                DataManager.getInstance(null).deleteMessage(new DataManager.Callback<Boolean>() {
+                    @Override
+                    public void onCall(Boolean response) {
+                        Log.d(getClass().getSimpleName(), "Delete " + response);
+                    }
+                }, mLastMessage.getId());
+            }
+            mLastPos = viewHolder.getAdapterPosition();
+            Message message = mAdapter.delete(viewHolder.getAdapterPosition());
+            mLastMessage = message;
+            mView.setVisibility(View.VISIBLE);
+            mTimer.cancel();
+            mTimer.start();
         }
 
     }

@@ -13,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.rgade.androidtask.app.R;
 import com.rgade.androidtask.app.core.DataManager;
+import com.rgade.androidtask.app.helpers.Utils;
 import com.rgade.androidtask.app.models.MessageFull;
 import com.rgade.androidtask.app.models.Participant;
 
@@ -24,6 +25,7 @@ public class Details extends AppCompatActivity {
     private TextView mSubject;
     private ImageView mStar;
     private MessageFull mMessage;
+    private TextView mDate;
     private int pos;
 
     @Override
@@ -37,6 +39,7 @@ public class Details extends AppCompatActivity {
         mBody = (TextView) findViewById(R.id.details_body);
         mSubject = (TextView) findViewById(R.id.details_subject);
         mStar = (ImageView) findViewById(R.id.details_star);
+        mDate = (TextView) findViewById(R.id.details_date);
         DataManager.getInstance(getApplicationContext()).fetchMessage(new DataManager.Callback<MessageFull>() {
             @Override
             public void onCall(MessageFull response) {
@@ -50,7 +53,7 @@ public class Details extends AppCompatActivity {
     private void setData() {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         if (mMessage == null || pos == -1) {
-            Toast.makeText(getBaseContext(),"Unable to retreive message",Toast.LENGTH_SHORT).show();
+            Toast.makeText(getBaseContext(), "Unable to retreive message", Toast.LENGTH_SHORT).show();
             finish();
         } else {
             mMessage.setStarred(DataManager.getInstance(null).getMessages().get(pos).isStarred());
@@ -79,6 +82,7 @@ public class Details extends AppCompatActivity {
                     }
                 }
             });
+            mDate.setText(Utils.getFullDateTime(mMessage.getTs()));
             mSubject.setText(mMessage.getSubject());
             mBody.setText(mMessage.getBody());
         }
@@ -106,13 +110,13 @@ public class Details extends AppCompatActivity {
                     if (response) {
                         DataManager.getInstance(null).getMessages().remove(pos);
                         finish();
-                    }else{
-                        Toast.makeText(getBaseContext(),"Unable to delete message",Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getBaseContext(), "Unable to delete message", Toast.LENGTH_SHORT).show();
                     }
                 }
             }, mMessage.getId());
             return true;
-        }else if(id==android.R.id.home){
+        } else if (id == android.R.id.home) {
             finish();
         }
         return super.onOptionsItemSelected(item);

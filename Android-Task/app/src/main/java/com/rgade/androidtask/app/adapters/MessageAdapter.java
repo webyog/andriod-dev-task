@@ -52,21 +52,21 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         return mList.size();
     }
 
-    public void delete(final int pos) {
+    public Message delete(final int pos) {
         Message message=mList.get(pos);
         mList.remove(pos);
         DataManager.getInstance(null).getMessages().remove(pos);
-        DataManager.getInstance(null).deleteMessage(new DataManager.Callback<Boolean>() {
-            @Override
-            public void onCall(Boolean response) {
-                if (response) {
-                    Log.d(getClass().getSimpleName(),"Delete successful");
-                }else{
-                    Log.d(getClass().getSimpleName(),"Delete failed");
-                }
-            }
-        }, message.getId());
         notifyItemRemoved(pos);
+        return message;
+    }
+
+    public boolean add(Message message, int pos){
+        if(pos>mList.size())
+            return false;
+        mList.add(pos,message);
+        DataManager.getInstance(null).getMessages().add(pos,message);
+        notifyItemInserted(pos);
+        return true;
     }
 
     public class MessageViewHolder extends RecyclerView.ViewHolder {
