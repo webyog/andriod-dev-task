@@ -26,11 +26,13 @@ public class DataManager {
     private static final String URL_MESSAGES = "http://127.0.0.1:8088/api/message/";
     private List<Message> messages;
     private static Context mContext;
+    private Message lastMessage;
 
     private DataManager(Context ctx) {
         mContext = ctx;
         mNetworkManager = NetworkManager.getInstance(ctx);
         messages = new ArrayList<Message>();
+        lastMessage=null;
     }
 
     public interface Callback<T> {
@@ -53,12 +55,15 @@ public class DataManager {
                     }.getType();
 
                     Gson gson = new Gson();
-                    Log.d(getClass().getSimpleName()+" - fetchMessages",response.toString());
+                    Log.d(getClass().getSimpleName() + " - fetchMessages", response.toString());
                     ArrayList<Message> temp = gson.fromJson(response.toString(), collectionType);
-                    for (Message m : temp)
-                        m.process();
                     messages.clear();
-                    messages.addAll(temp);
+                    for (Message m : temp) {
+                        if (lastMessage != null && m.getId().equals(lastMessage.getId()))
+                            continue;
+                        m.process();
+                        messages.add(m);
+                    }
                     success = true;
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -86,7 +91,7 @@ public class DataManager {
                 MessageFull temp = null;
                 try {
                     Gson gson = new Gson();
-                    Log.d(getClass().getSimpleName()+" - fetchMessage",response.toString());
+                    Log.d(getClass().getSimpleName() + " - fetchMessage", response.toString());
                     temp = gson.fromJson(response.toString(), MessageFull.class);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -107,14 +112,14 @@ public class DataManager {
         StringRequest request = new StringRequest(Request.Method.DELETE, URL_MESSAGES + id, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Log.d(getClass().getSimpleName()+" - deleteMessage","success");
+                Log.d(getClass().getSimpleName() + " - deleteMessage", "success");
                 callback.onCall(true);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 callback.onCall(false);
-                Log.d(getClass().getSimpleName()+" - deleteMessage","failure");
+                Log.d(getClass().getSimpleName() + " - deleteMessage", "failure");
             }
         });
         mNetworkManager.addToRequestQueue(request);
@@ -122,5 +127,13 @@ public class DataManager {
 
     public List<Message> getMessages() {
         return messages;
+    }
+
+    public Message getLastMessage() {
+        return lastMessage;
+    }
+
+    public void setLastMessage(Message lastMessage) {
+        this.lastMessage = lastMessage;
     }
 }

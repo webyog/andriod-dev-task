@@ -110,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                         mView.setVisibility(View.GONE);
                         mTimer.cancel();
                         mLastMessage = null;
+                        DataManager.getInstance(null).setLastMessage(null);
                         mLastPos = -1;
                     } else {
                         Log.w(getClass().getSimpleName(), "Undo screen invoked with null lastMessage");
@@ -134,6 +135,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                             }
                         }, mLastMessage.getId());
                         mView.setVisibility(View.GONE);
+                        DataManager.getInstance(null).setLastMessage(null);
                         mLastMessage = null;
                         mLastPos = -1;
                     } else {
@@ -163,6 +165,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             mLastPos = viewHolder.getAdapterPosition();
             Message message = mAdapter.delete(viewHolder.getAdapterPosition());
             mLastMessage = message;
+            DataManager.getInstance(null).setLastMessage(message);
             mView.setVisibility(View.VISIBLE);
             mTimer.cancel();
             mTimer.start();
