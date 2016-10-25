@@ -1,0 +1,10 @@
+/Android-Task/.gradle
+/local.properties
+/.idea/workspace.xml
+/.idea/libraries
+.DS_Store
+/Android-Task/build
+/captures
+.log
+/src/node_modules
+/Android-Task/.idea

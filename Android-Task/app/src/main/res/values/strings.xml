@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Messages</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_details"></string>
+    <string name="dummy">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas egestas leo sit amet justo vehicula tincidunt.</string>
+</resources>
